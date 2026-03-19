@@ -1,6 +1,6 @@
 <div align="center">
 <h1>
-  Stoat Backend
+  .Comms Backend
   
   [![Stars](https://img.shields.io/github/stars/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/stargazers)
   [![Forks](https://img.shields.io/github/forks/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/network/members)
@@ -9,7 +9,7 @@
   [![Contributors](https://img.shields.io/github/contributors/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/graphs/contributors)
   [![License](https://img.shields.io/github/license/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/blob/main/LICENSE)
 </h1>
-The services and libraries that power the Stoat service.<br/>
+The services and libraries that power the .Comms service.<br/>
 <br/>
 
 | Crate              | Path                                               | Description                         |                                                                                                                                                                                                                                                                                                           |
@@ -39,7 +39,7 @@ Rust 1.86.0 or higher.
 
 ## Development Guide
 
-Before contributing, make yourself familiar with [our contribution guidelines](https://developers.stoat.chat/developing/contrib/) and the [technical documentation for this project](https://stoatchat.github.io/stoatchat/).
+Before contributing, make yourself familiar with [our contribution guidelines](https://sanic.one/support) and the [technical documentation for this project](https://sanic.one/).
 
 Before getting started, you'll want to install:
 
@@ -59,7 +59,7 @@ As a heads-up, the development environment uses the following ports:
 | Redis                     |      6379      |
 | MinIO                     |     14009      |
 | Maildev                   | 14025<br>14080 |
-| Revolt Web App            |     14701      |
+| .Comms Web App            |     14701      |
 | RabbitMQ                  | 5672<br>15672  |
 | `crates/delta`            |     14702      |
 | `crates/bonfire`          |     14703      |
@@ -212,6 +212,6 @@ TEST_DB=MONGODB cargo nextest run
 
 ## License
 
-The Stoat backend is generally licensed under the [GNU Affero General Public License v3.0](https://github.com/stoatchat/stoatchat/blob/master/LICENSE).
+The .Comms backend is generally licensed under the [GNU Affero General Public License v3.0](https://github.com/stoatchat/stoatchat/blob/master/LICENSE).
 
 **Individual crates may supply their own licenses!**

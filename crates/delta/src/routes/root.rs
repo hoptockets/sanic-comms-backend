@@ -149,9 +149,9 @@ pub struct BuildInformation {
 /// # Server Configuration
 #[derive(Serialize, JsonSchema, Debug)]
 pub struct RevoltConfig {
-    /// Revolt API Version
+    /// .Comms API Version
     pub revolt: String,
-    /// Features enabled on this Revolt node
+    /// Features enabled on this .Comms node
     pub features: RevoltFeatures,
     /// WebSocket URL
     pub ws: String,
@@ -165,7 +165,7 @@ pub struct RevoltConfig {
 
 /// # Query Node
 ///
-/// Fetch the server configuration for this Revolt instance.
+/// Fetch the server configuration for this .Comms instance.
 #[openapi(tag = "Core")]
 #[get("/")]
 pub async fn root() -> Result<Json<RevoltConfig>> {
