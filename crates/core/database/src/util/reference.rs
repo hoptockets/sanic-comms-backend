@@ -10,7 +10,8 @@ use schemars::{
 };
 
 use crate::{
-    Bot, Channel, Database, Emoji, Invite, Member, Message, Server, ServerBan, User, Webhook,
+    Bot, Channel, Database, Emoji, Invite, Member, Message, Server, ServerBan, SoundboardClip,
+    Sticker, User, Webhook,
 };
 
 /// Reference to some object in the database
@@ -38,6 +39,16 @@ impl<'a> Reference<'a> {
     /// Fetch emoji from Ref
     pub async fn as_emoji(&self, db: &Database) -> Result<Emoji> {
         db.fetch_emoji(self.id).await
+    }
+
+    /// Fetch sticker from Ref
+    pub async fn as_sticker(&self, db: &Database) -> Result<Sticker> {
+        db.fetch_sticker(self.id).await
+    }
+
+    /// Fetch soundboard clip from Ref
+    pub async fn as_soundboard_clip(&self, db: &Database) -> Result<SoundboardClip> {
+        db.fetch_soundboard_clip(self.id).await
     }
 
     /// Fetch channel from Ref

@@ -64,6 +64,8 @@ auto_derived!(
         Message,
         ServerBanner,
         Emoji,
+        Sticker,
+        Soundboard,
         UserAvatar,
         WebhookAvatar,
         UserProfileBackground,
@@ -234,6 +236,44 @@ impl File {
             FileUsedFor {
                 id: parent.to_owned(),
                 object_type: FileUsedForType::Emoji,
+            },
+            uploader_id.to_owned(),
+        )
+        .await
+    }
+
+    /// Use a file for a server sticker (static or animated image in `stickers` bucket).
+    pub async fn use_sticker(
+        db: &Database,
+        id: &str,
+        parent: &str,
+        uploader_id: &str,
+    ) -> Result<File> {
+        db.find_and_use_attachment(
+            id,
+            "stickers",
+            FileUsedFor {
+                id: parent.to_owned(),
+                object_type: FileUsedForType::Sticker,
+            },
+            uploader_id.to_owned(),
+        )
+        .await
+    }
+
+    /// Use a file for a server soundboard clip (`soundboard` bucket).
+    pub async fn use_soundboard_clip(
+        db: &Database,
+        id: &str,
+        parent: &str,
+        uploader_id: &str,
+    ) -> Result<File> {
+        db.find_and_use_attachment(
+            id,
+            "soundboard",
+            FileUsedFor {
+                id: parent.to_owned(),
+                object_type: FileUsedForType::Soundboard,
             },
             uploader_id.to_owned(),
         )

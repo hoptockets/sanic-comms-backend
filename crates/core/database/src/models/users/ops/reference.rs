@@ -60,6 +60,15 @@ impl AbstractUsers for ReferenceDb {
             .collect()
     }
 
+    /// Fetch a recent slice of users from the database.
+    async fn fetch_recent_users(&self, limit: usize) -> Result<Vec<User>> {
+        let users = self.users.lock().await;
+        let mut out: Vec<User> = users.values().cloned().collect();
+        out.sort_by(|a, b| b.id.cmp(&a.id));
+        out.truncate(limit.clamp(1, 500));
+        Ok(out)
+    }
+
     /// Fetch all discriminators in use for a username
     async fn fetch_discriminators_in_use(&self, username: &str) -> Result<Vec<String>> {
         let users = self.users.lock().await;

@@ -47,6 +47,12 @@ auto_derived_partial!(
         /// Banner attachment
         #[serde(skip_serializing_if = "Option::is_none")]
         pub banner: Option<File>,
+        /// Optional accent colour used for server-themed surfaces
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub theme_accent: Option<String>,
+        /// Optional server card style preset
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub theme_preset: Option<String>,
 
         /// Bitfield of server flags
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -124,6 +130,8 @@ auto_derived!(
         SystemMessages,
         Icon,
         Banner,
+        ThemeAccent,
+        ThemePreset,
     }
 
     /// Optional fields on server object
@@ -152,6 +160,8 @@ impl Server {
 
             analytics: false,
             banner: None,
+            theme_accent: None,
+            theme_preset: None,
             categories: None,
             discoverable: false,
             flags: None,
@@ -228,6 +238,8 @@ impl Server {
             FieldsServer::SystemMessages => self.system_messages = None,
             FieldsServer::Icon => self.icon = None,
             FieldsServer::Banner => self.banner = None,
+            FieldsServer::ThemeAccent => self.theme_accent = None,
+            FieldsServer::ThemePreset => self.theme_preset = None,
         }
     }
 

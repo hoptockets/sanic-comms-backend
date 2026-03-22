@@ -17,4 +17,15 @@ impl AbstractSnapshot for ReferenceDb {
             Ok(())
         }
     }
+
+    async fn fetch_snapshots_by_report(&self, report_id: &str) -> Result<Vec<Snapshot>> {
+        Ok(self
+            .safety_snapshots
+            .lock()
+            .await
+            .values()
+            .filter(|snapshot| snapshot.report_id == report_id)
+            .cloned()
+            .collect())
+    }
 }

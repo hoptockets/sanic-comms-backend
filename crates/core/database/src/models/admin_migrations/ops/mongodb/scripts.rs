@@ -25,7 +25,7 @@ struct MigrationInfo {
     revision: i32,
 }
 
-pub const LATEST_REVISION: i32 = 50; // MUST BE +1 to last migration
+pub const LATEST_REVISION: i32 = 51; // MUST BE +1 to last migration
 
 pub async fn migrate_database(db: &MongoDb) {
     let migrations = db.col::<Document>("migrations");
@@ -1305,6 +1305,104 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                 .unwrap();
         }
     };
+
+    if revision <= 50 {
+        info!(
+            "Running migration [revision 50 / 20-03-2026]: Backfill report v2 defaults and admin restriction setting keys."
+        );
+
+        let now = Timestamp::now_utc().to_string();
+
+        // Backfill additive report v2 defaults for legacy documents.
+        db.col::<Document>("safety_reports")
+            .update_many(
+                doc! { "severity": { "$exists": false } },
+                doc! { "$set": { "severity": "Medium" } },
+            )
+            .await
+            .expect("Failed to backfill safety_reports.severity");
+
+        db.col::<Document>("safety_reports")
+            .update_many(
+                doc! { "priority": { "$exists": false } },
+                doc! { "$set": { "priority": "Normal" } },
+            )
+            .await
+            .expect("Failed to backfill safety_reports.priority");
+
+        db.col::<Document>("safety_reports")
+            .update_many(
+                doc! { "breach_state": { "$exists": false } },
+                doc! { "$set": { "breach_state": false } },
+            )
+            .await
+            .expect("Failed to backfill safety_reports.breach_state");
+
+        db.col::<Document>("safety_reports")
+            .update_many(
+                doc! { "created_at": { "$exists": false } },
+                doc! { "$set": { "created_at": &now } },
+            )
+            .await
+            .expect("Failed to backfill safety_reports.created_at");
+
+        db.col::<Document>("safety_reports")
+            .update_many(
+                doc! { "last_transition_at": { "$exists": false } },
+                doc! { "$set": { "last_transition_at": &now } },
+            )
+            .await
+            .expect("Failed to backfill safety_reports.last_transition_at");
+
+        db.col::<Document>("safety_reports")
+            .update_many(
+                doc! { "related_report_ids": { "$exists": false } },
+                doc! { "$set": { "related_report_ids": [] } },
+            )
+            .await
+            .expect("Failed to backfill safety_reports.related_report_ids");
+
+        // Seed restriction keys for users with existing settings docs only (additive/no overwrite).
+        db.col::<Document>("user_settings")
+            .update_many(
+                doc! { "admin:restriction:profile_locked": { "$exists": false } },
+                doc! { "$set": { "admin:restriction:profile_locked": vec![to_bson(&0_i64).unwrap(), to_bson(&"false").unwrap()] } },
+            )
+            .await
+            .expect("Failed to seed user_settings restriction profile_locked key");
+
+        db.col::<Document>("user_settings")
+            .update_many(
+                doc! { "admin:restriction:username_frozen_until": { "$exists": false } },
+                doc! { "$set": { "admin:restriction:username_frozen_until": vec![to_bson(&0_i64).unwrap(), to_bson(&"").unwrap()] } },
+            )
+            .await
+            .expect("Failed to seed user_settings restriction username_frozen_until key");
+
+        db.col::<Document>("user_settings")
+            .update_many(
+                doc! { "admin:restriction:display_name_frozen_until": { "$exists": false } },
+                doc! { "$set": { "admin:restriction:display_name_frozen_until": vec![to_bson(&0_i64).unwrap(), to_bson(&"").unwrap()] } },
+            )
+            .await
+            .expect("Failed to seed user_settings restriction display_name_frozen_until key");
+
+        db.col::<Document>("user_settings")
+            .update_many(
+                doc! { "admin:restriction:media_quarantined": { "$exists": false } },
+                doc! { "$set": { "admin:restriction:media_quarantined": vec![to_bson(&0_i64).unwrap(), to_bson(&"false").unwrap()] } },
+            )
+            .await
+            .expect("Failed to seed user_settings restriction media_quarantined key");
+
+        db.col::<Document>("user_settings")
+            .update_many(
+                doc! { "admin:restriction:profile_visibility_limited": { "$exists": false } },
+                doc! { "$set": { "admin:restriction:profile_visibility_limited": vec![to_bson(&0_i64).unwrap(), to_bson(&"false").unwrap()] } },
+            )
+            .await
+            .expect("Failed to seed user_settings restriction profile_visibility_limited key");
+    }
 
     // Reminder to update LATEST_REVISION when adding new migrations.
     LATEST_REVISION.max(revision)

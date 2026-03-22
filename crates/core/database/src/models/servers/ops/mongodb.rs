@@ -164,6 +164,8 @@ impl IntoDocumentPath for FieldsServer {
             FieldsServer::Description => "description",
             FieldsServer::Icon => "icon",
             FieldsServer::SystemMessages => "system_messages",
+            FieldsServer::ThemeAccent => "theme_accent",
+            FieldsServer::ThemePreset => "theme_preset",
         })
     }
 }
@@ -218,6 +220,24 @@ impl MongoDb {
             )
             .await
             .map_err(|_| create_database_error!("update_many", "emojis"))?;
+
+        for col in ["stickers", "soundboard_clips"] {
+            self.col::<Document>(col)
+                .update_many(
+                    doc! {
+                        "parent.id": &server_id
+                    },
+                    doc! {
+                        "$set": {
+                            "parent": {
+                                "type": "Detached"
+                            }
+                        }
+                    },
+                )
+                .await
+                .map_err(|_| create_database_error!("update_many", col))?;
+        }
 
         // Delete all channels.
         self.col::<Document>("channels")

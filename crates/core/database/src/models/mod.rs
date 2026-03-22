@@ -15,6 +15,8 @@ mod safety_snapshots;
 mod server_bans;
 mod server_members;
 mod servers;
+mod soundboard;
+mod stickers;
 mod user_settings;
 mod users;
 
@@ -35,6 +37,8 @@ pub use safety_snapshots::*;
 pub use server_bans::*;
 pub use server_members::*;
 pub use servers::*;
+pub use soundboard::*;
+pub use stickers::*;
 pub use user_settings::*;
 pub use users::*;
 
@@ -53,6 +57,8 @@ pub trait AbstractDatabase:
     + channel_unreads::AbstractChannelUnreads
     + channel_webhooks::AbstractWebhooks
     + emojis::AbstractEmojis
+    + soundboard::AbstractSoundboard
+    + stickers::AbstractStickers
     + file_hashes::AbstractAttachmentHashes
     + files::AbstractAttachments
     + messages::AbstractMessages

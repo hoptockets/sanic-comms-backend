@@ -52,6 +52,12 @@ auto_derived_partial!(
         /// Banner attachment
         #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
         pub banner: Option<File>,
+        /// Optional accent colour used for server-themed surfaces
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub theme_accent: Option<String>,
+        /// Optional server card style preset
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub theme_preset: Option<String>,
 
         /// Bitfield of server flags
         #[cfg_attr(
@@ -118,6 +124,8 @@ auto_derived!(
         SystemMessages,
         Icon,
         Banner,
+        ThemeAccent,
+        ThemePreset,
     }
 
     /// Optional fields on server object
@@ -232,6 +240,12 @@ auto_derived!(
         pub icon: Option<String>,
         /// Attachment Id for banner
         pub banner: Option<String>,
+        /// Optional accent colour used by server themed UI
+        #[cfg_attr(feature = "validator", validate(regex = "RE_COLOUR"))]
+        pub theme_accent: Option<String>,
+        /// Optional server theme preset key
+        #[cfg_attr(feature = "validator", validate(length(min = 1, max = 64)))]
+        pub theme_preset: Option<String>,
 
         /// Category structure for server
         #[cfg_attr(feature = "validator", validate)]

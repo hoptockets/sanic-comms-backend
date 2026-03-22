@@ -125,6 +125,8 @@ pub enum Tag {
     icons,
     banners,
     emojis,
+    stickers,
+    soundboard,
 }
 
 /// Request body for upload
@@ -155,6 +157,8 @@ pub struct UploadResponse {
 /// | icons | 2.5 MB | 40 MP or 10,000px | Image |
 /// | banners | 6 MB | 40 MP or 10,000px | Image |
 /// | emojis | 500 KB | 40 MP or 10,000px | Image |
+/// | stickers | 2 MB | 40 MP or 10,000px | Image |
+/// | soundboard | 512 KB | - | Audio |
 #[utoipa::path(
     post,
     path = "/{tag}",
@@ -199,10 +203,17 @@ async fn upload_file(
 
     // Get user's file upload limits
     let limits = user.limits().await;
-    let size_limit = *limits
+    let tag_name: &'static str = tag.clone().into();
+    let size_limit = limits
         .file_upload_size_limit
-        .get(tag.clone().into())
-        .expect("size limit");
+        .get(tag_name)
+        .copied()
+        .or_else(|| limits.file_upload_size_limit.get("attachments").copied())
+        .unwrap_or_else(|| match tag {
+            Tag::soundboard => 512 * 1024,
+            Tag::stickers => 2 * 1024 * 1024,
+            _ => 6 * 1024 * 1024,
+        });
 
     if original_file_size > size_limit {
         return Err(create_error!(FileTooLarge { max: size_limit }));
@@ -238,8 +249,14 @@ async fn upload_file(
     // Determine metadata for the file
     let metadata = generate_metadata(&file.contents, mime_type);
 
-    // Block non-images for non-attachment uploads
-    if !matches!(tag, Tag::attachments) && !matches!(metadata, Metadata::Image { .. }) {
+    // Block non-images for non-attachment uploads except soundboard audio files.
+    if !matches!(tag, Tag::attachments | Tag::soundboard)
+        && !matches!(metadata, Metadata::Image { .. })
+    {
+        return Err(create_error!(FileTypeNotAllowed));
+    }
+
+    if matches!(tag, Tag::soundboard) && !matches!(metadata, Metadata::Audio { .. }) {
         return Err(create_error!(FileTypeNotAllowed));
     }
 

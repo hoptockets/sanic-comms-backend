@@ -53,6 +53,12 @@ auto_derived_partial!(
         /// Bot information
         #[serde(skip_serializing_if = "Option::is_none")]
         pub bot: Option<BotInformation>,
+        /// Tiered platform admin role for `.comm` domain tooling
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub platform_admin_role: Option<v0::PlatformAdminRole>,
+        /// Optional scoped permissions used by platform admin dashboards
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub platform_permissions: Option<Vec<String>>,
 
         /// Time until user is unsuspended
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -130,6 +136,9 @@ auto_derived!(
         /// Background visible on user's profile
         #[serde(skip_serializing_if = "Option::is_none")]
         pub background: Option<File>,
+        /// Optional profile cosmetics configuration
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub cosmetics: Option<v0::UserProfileCosmetics>,
     }
 
     /// Bot information for if the user is a bot
@@ -179,6 +188,8 @@ impl Default for User {
             flags: Default::default(),
             privileged: Default::default(),
             bot: Default::default(),
+            platform_admin_role: Default::default(),
+            platform_permissions: Default::default(),
             suspended_until: Default::default(),
             last_acknowledged_policy_change: Timestamp::UNIX_EPOCH,
         }
@@ -814,13 +825,25 @@ impl User {
     /// Gets the user's badges along with calculating any dynamic badges
     pub async fn get_badges(&self) -> u32 {
         let config = config().await;
-        let badges = self.badges.unwrap_or_default() as u32;
+        let mut badges = self.badges.unwrap_or_default() as u32;
 
         if let Some(cutoff) = config.api.users.early_adopter_cutoff {
             if Ulid::from_string(&self.id).unwrap().timestamp_ms() < cutoff {
-                return badges + UserBadges::EarlyAdopter as u32;
-            };
-        };
+                badges |= UserBadges::EarlyAdopter as u32;
+            }
+        }
+
+        match self.platform_admin_role {
+            Some(v0::PlatformAdminRole::PlatformOwner)
+            | Some(v0::PlatformAdminRole::SafetyAdmin) => {
+                badges |= UserBadges::CommsAdmin as u32;
+            }
+            Some(v0::PlatformAdminRole::SupportAgent)
+            | Some(v0::PlatformAdminRole::Analyst) => {
+                badges |= UserBadges::CommsStaff as u32;
+            }
+            None => {}
+        }
 
         badges
     }

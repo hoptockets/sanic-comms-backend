@@ -39,6 +39,8 @@ pub async fn edit(
         && data.banner.is_none()
         && data.system_messages.is_none()
         && data.categories.is_none()
+        && data.theme_accent.is_none()
+        && data.theme_preset.is_none()
         // && data.nsfw.is_none()
         && data.flags.is_none()
         && data.analytics.is_none()
@@ -51,6 +53,8 @@ pub async fn edit(
         || data.icon.is_some()
         || data.banner.is_some()
         || data.system_messages.is_some()
+        || data.theme_accent.is_some()
+        || data.theme_preset.is_some()
         || data.analytics.is_some()
         || !data.remove.is_empty()
     {
@@ -74,6 +78,8 @@ pub async fn edit(
         description,
         icon,
         banner,
+        theme_accent,
+        theme_preset,
         categories,
         system_messages,
         flags,
@@ -88,6 +94,8 @@ pub async fn edit(
         description,
         categories: categories.map(|v| v.into_iter().map(Into::into).collect()),
         system_messages: system_messages.map(Into::into),
+        theme_accent,
+        theme_preset,
         flags,
         // nsfw,
         discoverable,

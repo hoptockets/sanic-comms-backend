@@ -71,6 +71,12 @@ auto_derived_partial!(
         /// Bot information
         #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
         pub bot: Option<BotInformation>,
+        /// Tiered platform admin role for `.comm` domain operations
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub platform_admin_role: Option<PlatformAdminRole>,
+        /// Optional scoped admin permissions for delegated tooling
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty", default))]
+        pub platform_permissions: Vec<String>,
 
         /// Current session user's relationship with this user
         pub relationship: RelationshipStatus,
@@ -161,6 +167,32 @@ auto_derived!(
         /// Background visible on user's profile
         #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
         pub background: Option<File>,
+        /// Optional profile cosmetics configuration
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        #[cfg_attr(feature = "validator", validate)]
+        pub cosmetics: Option<UserProfileCosmetics>,
+    }
+
+    /// User profile cosmetics and presentation options
+    #[derive(Default)]
+    #[cfg_attr(feature = "validator", derive(Validate))]
+    pub struct UserProfileCosmetics {
+        /// Optional profile font family key from allow-list
+        #[cfg_attr(feature = "validator", validate(length(min = 1, max = 64)))]
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub font: Option<String>,
+        /// Optional profile nameplate text
+        #[cfg_attr(feature = "validator", validate(length(min = 1, max = 48)))]
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub nameplate: Option<String>,
+        /// Optional role colour override for profile rendering
+        #[cfg_attr(feature = "validator", validate(length(min = 1, max = 16)))]
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub role_colour: Option<String>,
+        /// Optional profile animation preset key
+        #[cfg_attr(feature = "validator", validate(length(min = 1, max = 64)))]
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub animation: Option<String>,
     }
 
     /// User badge bitfield
@@ -188,6 +220,10 @@ auto_derived!(
         ReservedRelevantJokeBadge1 = 512,
         /// Low resolution troll face
         ReservedRelevantJokeBadge2 = 1024,
+        /// .Comms platform admin
+        CommsAdmin = 2048,
+        /// .Comms platform staff
+        CommsStaff = 4096,
     }
 
     /// User flag enum
@@ -214,6 +250,18 @@ auto_derived!(
         #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
         #[cfg_attr(feature = "validator", validate(length(min = 1, max = 128)))]
         pub background: Option<String>,
+        /// Cosmetics to apply to profile rendering
+        #[cfg_attr(feature = "validator", validate)]
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub cosmetics: Option<UserProfileCosmetics>,
+    }
+
+    /// Tiered platform admin role for `.comm` domain operations
+    pub enum PlatformAdminRole {
+        PlatformOwner,
+        SafetyAdmin,
+        SupportAgent,
+        Analyst,
     }
 
     /// New user information
@@ -244,6 +292,13 @@ auto_derived!(
         /// Enum of user flags
         #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
         pub flags: Option<i32>,
+
+        /// Optional platform admin role assignment (privileged-only)
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub platform_admin_role: Option<PlatformAdminRole>,
+        /// Optional scoped admin permissions for delegated tooling
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub platform_permissions: Option<Vec<String>>,
 
         /// Fields to remove from user object
         #[cfg_attr(feature = "serde", serde(default))]

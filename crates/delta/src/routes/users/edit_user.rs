@@ -6,6 +6,8 @@ use rocket::serde::json::Json;
 use rocket::State;
 use validator::Validate;
 
+use crate::util::admin_permissions;
+
 /// # Edit User
 ///
 /// Edit currently authenticated user.
@@ -25,8 +27,14 @@ pub async fn edit(
     })?;
 
     // Filter out invalid edit fields
-    if !user.privileged && (data.badges.is_some() || data.flags.is_some()) {
-        return Err(create_error!(NotPrivileged));
+    if data.badges.is_some() || data.flags.is_some() {
+        admin_permissions::ensure_permission(&user, admin_permissions::PERM_USERS_FLAGS_WRITE)?;
+    }
+    if data.platform_admin_role.is_some() || data.platform_permissions.is_some() {
+        admin_permissions::ensure_owner_delegation(
+            &user,
+            data.platform_permissions.as_deref().unwrap_or_default(),
+        )?;
     }
 
     // If we want to edit a different user than self, ensure we have
@@ -82,6 +90,8 @@ pub async fn edit(
         display_name: data.display_name,
         badges: data.badges,
         flags: data.flags,
+        platform_admin_role: data.platform_admin_role,
+        platform_permissions: data.platform_permissions,
         ..Default::default()
     };
 
@@ -114,6 +124,38 @@ pub async fn edit(
         if let Some(background) = profile.background {
             new_profile.background =
                 Some(File::use_background(db, &background, &user.id, &user.id).await?);
+        }
+
+        if let Some(cosmetics) = profile.cosmetics {
+            if !user.privileged {
+                if let Some(font) = cosmetics.font.as_ref() {
+                    const ALLOWED_FONTS: [&str; 8] = [
+                        "inter",
+                        "lexend",
+                        "noto-sans",
+                        "atkinson",
+                        "poppins",
+                        "montserrat",
+                        "open-sans",
+                        "raleway",
+                    ];
+                    if !ALLOWED_FONTS.iter().any(|value| value == font) {
+                        return Err(create_error!(FailedValidation {
+                            error: "font is not allowed by cosmetic policy".to_owned()
+                        }));
+                    }
+                }
+                if let Some(animation) = cosmetics.animation.as_ref() {
+                    const ALLOWED_ANIMATIONS: [&str; 6] =
+                        ["none", "pulse", "glow", "shimmer", "fade", "float"];
+                    if !ALLOWED_ANIMATIONS.iter().any(|value| value == animation) {
+                        return Err(create_error!(FailedValidation {
+                            error: "animation is not allowed by cosmetic policy".to_owned()
+                        }));
+                    }
+                }
+            }
+            new_profile.cosmetics = Some(cosmetics);
         }
 
         partial.profile = Some(new_profile);

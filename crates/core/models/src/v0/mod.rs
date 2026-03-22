@@ -12,6 +12,7 @@ mod safety_reports;
 mod server_bans;
 mod server_members;
 mod servers;
+mod soundboard;
 mod user_settings;
 mod users;
 
@@ -29,5 +30,6 @@ pub use safety_reports::*;
 pub use server_bans::*;
 pub use server_members::*;
 pub use servers::*;
+pub use soundboard::*;
 pub use user_settings::*;
 pub use users::*;

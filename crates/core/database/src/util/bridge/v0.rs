@@ -341,6 +341,30 @@ impl From<crate::Emoji> for Emoji {
     }
 }
 
+impl From<crate::Sticker> for Emoji {
+    fn from(value: crate::Sticker) -> Self {
+        Emoji {
+            id: value.id,
+            parent: value.parent.into(),
+            creator_id: value.creator_id,
+            name: value.name,
+            animated: value.animated,
+            nsfw: value.nsfw,
+        }
+    }
+}
+
+impl From<crate::SoundboardClip> for SoundboardClip {
+    fn from(value: crate::SoundboardClip) -> Self {
+        SoundboardClip {
+            id: value.id,
+            parent: value.parent.into(),
+            creator_id: value.creator_id,
+            name: value.name,
+        }
+    }
+}
+
 impl From<crate::EmojiParent> for EmojiParent {
     fn from(value: crate::EmojiParent) -> Self {
         match value {
@@ -588,8 +612,24 @@ impl From<crate::Report> for Report {
             author_id: value.author_id,
             content: value.content,
             additional_context: value.additional_context,
+            report_context: value.report_context,
+            reporter_metadata: value.reporter_metadata,
+            severity: value.severity,
+            priority: value.priority,
+            risk_score: value.risk_score,
+            confidence_score: value.confidence_score,
+            dedupe_key: value.dedupe_key,
+            related_report_ids: value.related_report_ids,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+            last_transition_at: value.last_transition_at,
+            resolved_at: value.resolved_at,
+            sla_deadline: value.sla_deadline,
+            breach_state: value.breach_state,
             status: value.status,
             notes: value.notes,
+            assignee_id: value.assignee_id,
+            reviewer_id: value.reviewer_id,
         }
     }
 }
@@ -741,6 +781,8 @@ impl From<crate::Server> for Server {
             default_permissions: value.default_permissions,
             icon: value.icon.map(|f| f.into()),
             banner: value.banner.map(|f| f.into()),
+            theme_accent: value.theme_accent,
+            theme_preset: value.theme_preset,
             flags: value.flags.unwrap_or_default() as u32,
             nsfw: value.nsfw,
             analytics: value.analytics,
@@ -769,6 +811,8 @@ impl From<Server> for crate::Server {
             default_permissions: value.default_permissions,
             icon: value.icon.map(|f| f.into()),
             banner: value.banner.map(|f| f.into()),
+            theme_accent: value.theme_accent,
+            theme_preset: value.theme_preset,
             flags: Some(value.flags as i32),
             nsfw: value.nsfw,
             analytics: value.analytics,
@@ -795,6 +839,8 @@ impl From<crate::PartialServer> for PartialServer {
             default_permissions: value.default_permissions,
             icon: value.icon.map(|f| f.into()),
             banner: value.banner.map(|f| f.into()),
+            theme_accent: value.theme_accent,
+            theme_preset: value.theme_preset,
             flags: value.flags.map(|v| v as u32),
             nsfw: value.nsfw,
             analytics: value.analytics,
@@ -821,6 +867,8 @@ impl From<PartialServer> for crate::PartialServer {
             default_permissions: value.default_permissions,
             icon: value.icon.map(|f| f.into()),
             banner: value.banner.map(|f| f.into()),
+            theme_accent: value.theme_accent,
+            theme_preset: value.theme_preset,
             flags: value.flags.map(|v| v as i32),
             nsfw: value.nsfw,
             analytics: value.analytics,
@@ -837,6 +885,8 @@ impl From<crate::FieldsServer> for FieldsServer {
             crate::FieldsServer::Description => FieldsServer::Description,
             crate::FieldsServer::Icon => FieldsServer::Icon,
             crate::FieldsServer::SystemMessages => FieldsServer::SystemMessages,
+            crate::FieldsServer::ThemeAccent => FieldsServer::ThemeAccent,
+            crate::FieldsServer::ThemePreset => FieldsServer::ThemePreset,
         }
     }
 }
@@ -849,6 +899,8 @@ impl From<FieldsServer> for crate::FieldsServer {
             FieldsServer::Description => crate::FieldsServer::Description,
             FieldsServer::Icon => crate::FieldsServer::Icon,
             FieldsServer::SystemMessages => crate::FieldsServer::SystemMessages,
+            FieldsServer::ThemeAccent => crate::FieldsServer::ThemeAccent,
+            FieldsServer::ThemePreset => crate::FieldsServer::ThemePreset,
         }
     }
 }
@@ -1038,6 +1090,8 @@ impl crate::User {
             bot: self.bot.map(|bot| bot.into()),
             relationship,
             id: self.id,
+            platform_admin_role: self.platform_admin_role,
+            platform_permissions: self.platform_permissions.unwrap_or_default(),
         }
     }
 
@@ -1102,6 +1156,8 @@ impl crate::User {
             bot: self.bot.map(|bot| bot.into()),
             relationship,
             id: self.id,
+            platform_admin_role: self.platform_admin_role,
+            platform_permissions: self.platform_permissions.unwrap_or_default(),
         }
     }
 
@@ -1130,6 +1186,8 @@ impl crate::User {
             bot: self.bot.map(|bot| bot.into()),
             relationship: RelationshipStatus::None, // events client will populate this from cache
             id: self.id,
+            platform_admin_role: self.platform_admin_role,
+            platform_permissions: self.platform_permissions.unwrap_or_default(),
         }
     }
 
@@ -1165,6 +1223,8 @@ impl crate::User {
             bot: self.bot.map(|bot| bot.into()),
             relationship: RelationshipStatus::User,
             id: self.id,
+            platform_admin_role: self.platform_admin_role,
+            platform_permissions: self.platform_permissions.unwrap_or_default(),
         }
     }
 
@@ -1191,6 +1251,8 @@ impl From<User> for crate::User {
             flags: Some(value.flags as i32),
             privileged: value.privileged,
             bot: value.bot.map(Into::into),
+            platform_admin_role: value.platform_admin_role,
+            platform_permissions: Some(value.platform_permissions),
             suspended_until: None,
             last_acknowledged_policy_change: Timestamp::UNIX_EPOCH,
         }
@@ -1218,6 +1280,8 @@ impl From<crate::PartialUser> for PartialUser {
             relationship: None,
             online: None,
             id: value.id,
+            platform_admin_role: value.platform_admin_role,
+            platform_permissions: value.platform_permissions,
         }
     }
 }
@@ -1335,6 +1399,7 @@ impl From<crate::UserProfile> for UserProfile {
         UserProfile {
             content: value.content,
             background: value.background.map(|file| file.into()),
+            cosmetics: value.cosmetics,
         }
     }
 }
@@ -1344,6 +1409,7 @@ impl From<UserProfile> for crate::UserProfile {
         crate::UserProfile {
             content: value.content,
             background: value.background.map(|file| file.into()),
+            cosmetics: value.cosmetics,
         }
     }
 }

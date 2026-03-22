@@ -80,6 +80,31 @@ impl AbstractUsers for MongoDb {
             .await)
     }
 
+    /// Fetch a recent slice of users from the database.
+    async fn fetch_recent_users(&self, limit: usize) -> Result<Vec<User>> {
+        let capped = limit.clamp(1, 500) as i64;
+        Ok(self
+            .col::<User>(COL)
+            .find(doc! {})
+            .with_options(
+                FindOptions::builder()
+                    .limit(capped)
+                    .sort(doc! { "_id": -1_i32 })
+                    .build(),
+            )
+            .await
+            .map_err(|_| create_database_error!("find", COL))?
+            .filter_map(|s| async {
+                if cfg!(debug_assertions) {
+                    Some(s.unwrap())
+                } else {
+                    s.ok()
+                }
+            })
+            .collect()
+            .await)
+    }
+
     /// Fetch all discriminators in use for a username
     async fn fetch_discriminators_in_use(&self, username: &str) -> Result<Vec<String>> {
         #[derive(Deserialize)]
